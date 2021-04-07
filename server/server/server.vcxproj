@@ -143,6 +143,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="server.cpp" />
+    <ClCompile Include="src\tcp_server.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="headers\tcp_server.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
