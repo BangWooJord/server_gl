@@ -12,6 +12,7 @@ boost::shared_ptr<tcp_connection>
 	return boost::shared_ptr<tcp_connection>(new tcp_connection(context));
 }
 void tcp_connection::start() {
+	message = "I'm server";
 	boost::asio::async_write(this->socket, boost::asio::buffer(message),
 		boost::bind(&tcp_connection::write, shared_from_this()));
 }
