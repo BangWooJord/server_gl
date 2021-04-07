@@ -1,20 +1,25 @@
-// server.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <iostream>
+#include <boost/asio.hpp>
+#include <boost/array.hpp>
+
+using boost::asio::ip::tcp;
+
+void printCommands() {
+	std::cout << " - help \n \t\t This help message" << std::endl;
+	std::cout << " - start \n \t\t Start server" << std::endl;
+	std::cout << " - stop \n \t\t Stop server" << std::endl;
+	std::cout << " - setport \n \t\t Set server port" << std::endl;
+	std::cout << " - exit \n \t\t Exit this session" << std::endl;
+}
 
 int main()
 {
-    std::cout << "Hello World!\n";
+	std::cerr << "Write 'help' to see the command list" << std::endl << std::endl;
+	while (true) {
+		std::string input;
+		std::cout << "Server> ";
+		std::cin >> input; 
+		if (input == "help") printCommands();
+	}
+	return 0;
 }
-
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
