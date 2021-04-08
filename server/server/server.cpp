@@ -18,9 +18,10 @@ int main()
 {
         std::cerr << "Write 'help' to see the command list" << std::endl << std::endl;
 
-        int port;
+        int port = NULL;
         std::string input; 
         std::thread server_listen_th;
+        tcp_server *server = nullptr;
         while (true) {
             std::cout << "Server> ";
             std::cin >> input;
@@ -30,13 +31,21 @@ int main()
                 if (port) {
                     server_listen_th = std::thread([&]() {
                         boost::asio::io_context io_context;
-                        tcp_server server(io_context, std::move(port));
+                        server = new tcp_server(io_context, std::move(port));
                         io_context.run();
                         });
                     std::cout << "Server started on port " << port << std::endl;
                 }
+                else std::cerr << "Set port first" << std::endl;
             }
             else if (input == "stop") {
+                if (server != nullptr) {
+                    server->server_stop();
+                    server = nullptr;
+                    system("cls");
+                    server_listen_th.detach();
+                }
+                else std::cerr << "Can't close non existing server" << std::endl;
             }
             else if (input == "setport") {
                 std::cin >> port;

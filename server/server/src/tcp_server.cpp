@@ -34,7 +34,9 @@ void tcp_connection::handle_read(const boost::system::error_code& err) {
         std::cerr << "Client disconnected forcefully" << std::endl;
     else std::cerr << "Read caught an error: " << err.message() << std::endl;
 }
-
+void tcp_connection::connectionStop() {
+    this->connection_socket.close();
+}
 // TCP_SERVER
 
 tcp_server::tcp_server(boost::asio::io_context& io_context, const int port)
@@ -58,9 +60,14 @@ void tcp_server::handle_accept(tcp_connection::pointer new_connection,
 	if (!error)
 	{
 		new_connection->start();
+        start_accept();
 	}
 	else std::cerr << "Error in handle_accept: " << error.message();
-
-
-	start_accept();
+}
+void tcp_server::server_stop() {
+    srv_io_context.post(boost::bind(&tcp_server::handle_stop, this));
+}
+void tcp_server::handle_stop() {
+    srv_acceptor.close();
+    srv_io_context.stop();
 }

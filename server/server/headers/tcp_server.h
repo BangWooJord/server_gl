@@ -18,7 +18,7 @@ public:
     }
 
     tcp::socket& getSocket();
-
+    void connectionStop();
     void start();
 
 private:
@@ -36,13 +36,13 @@ class tcp_server
 public:
     tcp_server(boost::asio::io_context& io_context, const int port);
 
+    void server_stop();
 private:
     void start_accept();
-
+    void handle_stop();
     void handle_accept(tcp_connection::pointer new_connection,
         const boost::system::error_code& error);
 
-    void server_stop();
     boost::asio::io_context& srv_io_context;
     tcp::acceptor srv_acceptor;
 };
