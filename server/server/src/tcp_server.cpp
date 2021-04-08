@@ -1,39 +1,41 @@
 #include "../headers/tcp_server.h"
 
-tcp_connection::tcp_connection(boost::asio::io_context& context)
-	:socket(context) {
-}
-tcp::socket& tcp_connection::getSocket() {
-	return this->socket;
-}
-boost::shared_ptr<tcp_connection> 
-	tcp_connection::create_pointer(boost::asio::io_context& context) 
+tcp_connection::tcp_connection(tcp::socket socket) 
+	:connection_socket(std::move(socket))
 {
-	return boost::shared_ptr<tcp_connection>(new tcp_connection(context));
+
 }
 void tcp_connection::start() {
-	message = "I'm server";
-	boost::asio::async_write(this->socket, boost::asio::buffer(message),
-		boost::bind(&tcp_connection::write, shared_from_this()));
+	connection_socket.async_read_some(
+		boost::asio::buffer(connection_data, max_length),
+		boost::bind(&tcp_connection::read,
+			shared_from_this()));
+
+	connection_socket.async_write_some(
+		boost::asio::buffer(message, max_length),
+		boost::bind(&tcp_connection::write,
+			shared_from_this()));
+}
+void tcp_connection::read() {
 }
 void tcp_connection::write() {
-
 }
 
 // TCP_SERVER
 tcp_server::tcp_server(boost::asio::io_context& context, const int port)
-	:server_port(port), server_context(context),
-	server_acceptor(server_context, tcp::endpoint(tcp::v4(), server_port))
+	:server_acceptor(context, tcp::endpoint(tcp::v4(), port))
 {
 	server_listen();
 }
 
 void tcp_server::server_listen() {
-	boost::shared_ptr<tcp_connection> new_connection =
-		tcp_connection::create_pointer(server_context);
+	// socket
+	tcp_connection::pointer connection
+		= tcp_connection::create();
 
-	server_acceptor.async_accept(new_connection->getSocket(),
-		boost::bind(&tcp_server::accept, this, new_connection,
+	// asynchronous accept operation and wait for a new connection.
+	server_acceptor.async_accept(connection->socket(),
+		boost::bind(&tcp_server::accept, this, connection,
 			boost::asio::placeholders::error));
 }
 void tcp_server::accept(boost::shared_ptr<tcp_connection> new_connection,
