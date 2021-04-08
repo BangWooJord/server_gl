@@ -28,6 +28,10 @@ int main()
 
             if (input == "help") printCommands();
             else if (input == "start") {
+                if (server_listen_th.joinable()) {
+                    std::cerr << "Server is currently running, stop it first" << std::endl;
+                    continue;
+                }
                 if (port) {
                     server_listen_th = std::thread([&]() {
                         boost::asio::io_context io_context;
@@ -42,7 +46,6 @@ int main()
                 if (server != nullptr) {
                     server->server_stop();
                     server = nullptr;
-                    system("cls");
                     server_listen_th.detach();
                 }
                 else std::cerr << "Can't close non existing server" << std::endl;

@@ -17,7 +17,7 @@ public:
         return pointer(new tcp_connection(io_context));
     }
 
-    tcp::socket& getSocket();
+    inline tcp::socket& getSocket();
     void connectionStop();
     void start();
 
