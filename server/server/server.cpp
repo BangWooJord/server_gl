@@ -4,6 +4,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/asio.hpp>
+#include <thread>
 
 using boost::asio::ip::tcp;
 
@@ -39,11 +40,7 @@ private:
     }
 
     void handle_read(const boost::system::error_code& err) {
-        if ((err == boost::asio::error::eof) ||
-            (boost::asio::error::connection_reset == err)) {
-            std::cerr << err.message() << std::endl;
-        }
-        else if(!err) {
+        if (!err) {
             std::istream is(&msg_buf);
             std::getline(is, string_msg);
             if (!string_msg.empty()) {
@@ -51,6 +48,11 @@ private:
             }
             start();
         }
+        else if (err == boost::asio::error::eof) 
+            std::cerr << "Client disconnected" << std::endl;
+        else if (boost::asio::error::connection_reset == err) 
+            std::cerr << "Client disconnected forcefully" << std::endl;
+        else std::cerr << "Read caught an error: " << err.message() << std::endl;
     }
 
     tcp::socket connection_socket;
@@ -109,7 +111,8 @@ int main()
         std::cerr << "Write 'help' to see the command list" << std::endl << std::endl;
 
         int port;
-        std::string input;
+        std::string input; 
+        std::thread server_listen_th;
         while (true) {
             std::cout << "Server> ";
             std::cin >> input;
@@ -117,9 +120,11 @@ int main()
             if (input == "help") printCommands();
             else if (input == "start") {
                 if (port) {
-                    boost::asio::io_context io_context;
-                    tcp_server server(io_context, std::move(port));
-                    io_context.run();
+                    server_listen_th = std::thread([&]() {
+                        boost::asio::io_context io_context;
+                        tcp_server server(io_context, std::move(port));
+                        io_context.run();
+                        });
                 }
             }
             else if (input == "stop") {
@@ -139,6 +144,7 @@ int main()
                 std::cerr << "'" + input + "'" << " is not recognized as a command. \n Try 'help' to get the command list\n\n";
             }
         }
+        server_listen_th.join();
 
     return 0;
 }

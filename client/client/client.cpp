@@ -7,7 +7,9 @@ using boost::asio::ip::tcp;
 
 void write_handler(const boost::system::error_code& error,
     std::size_t bytes_transferred) {
-
+    if (error) {
+        std::cerr << "Write Handler caught error: " << error.message() << std::endl;
+    }
 }
 
 int connect_to_srv(boost::asio::io_service& service, tcp::socket& socket, const std::string address) {
@@ -16,10 +18,12 @@ int connect_to_srv(boost::asio::io_service& service, tcp::socket& socket, const 
     std::string host = address.substr(0, semicln);
     std::string port = address.substr(semicln + 1);
 
+    boost::system::error_code err;
+
     tcp::resolver resolver(service);
     tcp::resolver::query q(tcp::v4(), host, port);
-    tcp::resolver::iterator it = resolver.resolve(q);
-    boost::system::error_code err;
+    tcp::resolver::iterator it = resolver.resolve(q, err);
+    if (err) throw - 2;
     boost::asio::connect(socket, it, err);
     if (err) throw -1;
 
@@ -53,7 +57,7 @@ int main(int argc, char* argv[])
                 connect_to_srv(service, socket, address);
             }
             catch (int err) {
-                std::cerr << "Couldn't establish server connection, error: " << err;
+                std::cerr << "Couldn't establish server connection, error: " << err << std::endl;
                 is_connected = false;
                 continue;
             }
