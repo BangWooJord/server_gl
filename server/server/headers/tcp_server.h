@@ -13,16 +13,17 @@ class tcp_connection
 public:
     typedef boost::shared_ptr<tcp_connection> pointer;
 
-    static pointer create(boost::asio::io_context& io_context) {
+    //inline for performance
+    inline static pointer create(boost::asio::io_context& io_context) {
         return pointer(new tcp_connection(io_context));
     }
 
-    inline tcp::socket& getSocket();
-    void connectionStop();
+    inline tcp::socket& getSocket(); 
+    inline void connectionStop();
     void start();
 
 private:
-    tcp_connection(boost::asio::io_context& io_context);
+    inline tcp_connection(boost::asio::io_context& io_context);
 
     void handle_read(const boost::system::error_code& err);
 

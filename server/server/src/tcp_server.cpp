@@ -9,7 +9,7 @@ void tcp_connection::start()
 {
     boost::system::error_code err;
     boost::asio::async_read(connection_socket, msg_buf,
-        boost::asio::transfer_at_least(1),
+        boost::asio::transfer_at_least(1), // not trying to read unless there is something to read
         boost::bind(&tcp_connection::handle_read, shared_from_this(),
             boost::asio::placeholders::error));
 }
@@ -68,10 +68,10 @@ void tcp_server::server_stop() {
     srv_io_context.post(boost::bind(&tcp_server::handle_stop, this));
 }
 void tcp_server::handle_stop() {
-    std::string exit_flag = "1";
-    tcp::socket sock(srv_io_context);
-    boost::system::error_code err;
-    boost::asio::write(sock, boost::asio::buffer(exit_flag, 1), err);
+    std::string exit_flag = "1"; // flag that we are sending
+    tcp::socket sock(srv_io_context); //getting needed socket from io_context
+    boost::system::error_code err; //in case of errors
+    boost::asio::write(sock, boost::asio::buffer(exit_flag, 1), err);//notifying clients that server has stopped
     srv_acceptor.close();
     srv_io_context.stop();
 }

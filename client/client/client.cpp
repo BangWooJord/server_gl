@@ -15,13 +15,15 @@ void write_handler(const boost::system::error_code& error,
 
 int connect_to_srv(boost::asio::io_service& service, tcp::socket& socket, const std::string address) {
 
+    //getting ip and port from a full address
     const auto semicln = address.find(":");
     std::string host = address.substr(0, semicln);
-    std::string port = address.substr(semicln + 1);
+    std::string port = address.substr(semicln + 1); 
 
     boost::system::error_code err;
 
     tcp::resolver resolver(service);
+    //query and iterator are deprecated, but they make connect command much easier to read
     tcp::resolver::query q(tcp::v4(), host, port);
     tcp::resolver::iterator it = resolver.resolve(q, err);
     if (err) throw - 2;
@@ -48,11 +50,11 @@ int main(int argc, char* argv[])
     std::string input;
     boost::system::error_code err;
     bool is_connected = false;
-    std::thread check_server_th([&]() {
+    std::thread check_server_th([&]() { // a thread that constantly check if the server is live
         while (true) {
             if (is_connected) {
                 boost::asio::streambuf exit_msg;
-                boost::asio::read(socket, exit_msg, err);
+                boost::asio::read(socket, exit_msg, err); // waiting for the server to send us something - which he does only when stops
                 std::cout << "\rServer disconnected" << std::endl << "Client>";
                 is_connected = false;
             }
@@ -75,6 +77,7 @@ int main(int argc, char* argv[])
                 continue;
             }
             is_connected = true;
+            std::cout << "\r Connected to " << address << std::endl;
         }
         else if (input == "send") {
             if (is_connected) {

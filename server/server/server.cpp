@@ -21,8 +21,9 @@ int main()
 
         int port = NULL;
         std::string input; 
-        std::thread server_listen_th;
-        tcp_server *server = nullptr;
+        std::thread server_listen_th; //a thread that does all the work with clients,
+                                    //since we need to be able to type in commands
+        tcp_server *server = nullptr; // made so we will be able to work with server while its running
         while (true) {
             std::cout << "Server> ";
             std::cin >> input;
