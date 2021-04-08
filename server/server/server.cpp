@@ -1,102 +1,10 @@
 #include <iostream>
 #include <string>
-#include <boost/bind.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
 #include <boost/asio.hpp>
+#include "headers/tcp_server.h"
 #include <thread>
 
 using boost::asio::ip::tcp;
-
-class tcp_connection
-    : public boost::enable_shared_from_this<tcp_connection>
-{
-public:
-    typedef boost::shared_ptr<tcp_connection> pointer;
-
-    static pointer create(boost::asio::io_context& io_context)
-    {
-        return pointer(new tcp_connection(io_context));
-    }
-
-    tcp::socket& getSocket()
-    {
-        return connection_socket;
-    }
-
-    void start()
-    {
-        boost::system::error_code err;
-        boost::asio::async_read(connection_socket, msg_buf,
-            boost::asio::transfer_at_least(1),
-            boost::bind(&tcp_connection::handle_read, shared_from_this(), 
-                boost::asio::placeholders::error));
-    }
-
-private:
-    tcp_connection(boost::asio::io_context& io_context)
-        : connection_socket(io_context)
-    {
-    }
-
-    void handle_read(const boost::system::error_code& err) {
-        if (!err) {
-            std::istream is(&msg_buf);
-            std::getline(is, string_msg);
-            if (!string_msg.empty()) {
-                std::cout << "Message recieved from: " << connection_socket.local_endpoint().address() << ", message: " << string_msg << std::endl;
-            }
-            start();
-        }
-        else if (err == boost::asio::error::eof) 
-            std::cerr << "Client disconnected" << std::endl;
-        else if (boost::asio::error::connection_reset == err) 
-            std::cerr << "Client disconnected forcefully" << std::endl;
-        else std::cerr << "Read caught an error: " << err.message() << std::endl;
-    }
-
-    tcp::socket connection_socket;
-    boost::asio::streambuf msg_buf;
-    std::string string_msg;
-};
-
-class tcp_server
-{
-public:
-    tcp_server(boost::asio::io_context& io_context, const int port)
-        : srv_io_context(io_context),
-        srv_acceptor(io_context, tcp::endpoint(boost::asio::ip::make_address("127.0.0.1"), port))
-    {
-        start_accept();
-    }
-
-private:
-    void start_accept()
-    {
-        tcp_connection::pointer new_connection =
-            tcp_connection::create(srv_io_context);
-
-        srv_acceptor.async_accept(new_connection->getSocket(),
-            boost::bind(&tcp_server::handle_accept, this, new_connection,
-                boost::asio::placeholders::error));
-    }
-
-    void handle_accept(tcp_connection::pointer new_connection,
-        const boost::system::error_code& error)
-    {
-        if (!error)
-        {
-            new_connection->start();
-        }
-        else std::cerr << "Error in handle_accept: " << error.message();
-       
-
-        start_accept();
-    }
-
-    boost::asio::io_context& srv_io_context;
-    tcp::acceptor srv_acceptor;
-};
 
 void printCommands() {
     std::cout << " - help \n \t\t This help message" << std::endl;
@@ -125,6 +33,7 @@ int main()
                         tcp_server server(io_context, std::move(port));
                         io_context.run();
                         });
+                    std::cout << "Server started on port " << port << std::endl;
                 }
             }
             else if (input == "stop") {
