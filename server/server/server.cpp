@@ -7,11 +7,12 @@
 using boost::asio::ip::tcp;
 
 void printCommands() {
-    std::cout << " - help \n \t\t This help message" << std::endl;
-    std::cout << " - start \n \t\t Start server" << std::endl;
-    std::cout << " - stop \n \t\t Stop server" << std::endl;
-    std::cout << " - setport \n \t\t Set server port. E.g: setport 123" << std::endl;
-    std::cout << " - exit \n \t\t Exit this session" << std::endl;
+    std::cout << std::endl;
+    std::cout << " - help \n \t\t This help message" << std::endl << std::endl;
+    std::cout << " - start \n \t\t Start server" << std::endl << std::endl;
+    std::cout << " - stop \n \t\t Stop server" << std::endl << std::endl;
+    std::cout << " - setport \n \t\t Set server port. E.g: setport 123" << std::endl << std::endl;
+    std::cout << " - exit \n \t\t Exit this session" << std::endl << std::endl;
 }
 
 int main()
@@ -57,6 +58,7 @@ int main()
                     std::cin.clear();
                     std::cin.ignore();
                 }
+                else std::cout << "\nPort succesfully set to " << port << std::endl << std::endl;
             }
             else if (input == "exit") {
                 break;

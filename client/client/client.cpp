@@ -32,10 +32,11 @@ int connect_to_srv(boost::asio::io_service& service, tcp::socket& socket, const 
 
 
 void printCommands() {
-    std::cout << " - help \n \t\t This help message" << std::endl;
-    std::cout << " - connect \n \t\t Connect to the server. E.g: connect 127.0.0.1:54000" << std::endl;
-    std::cout << " - send \n \t\t Send message. E.g: send Hello" << std::endl;
-    std::cout << " - exit \n \t\t Exit this session" << std::endl;
+    std::cout << std::endl;
+    std::cout << " - help \n \t\t This help message" << std::endl << std::endl;
+    std::cout << " - connect \n \t\t Connect to the server. E.g: connect 127.0.0.1:54000" << std::endl << std::endl;
+    std::cout << " - send \n \t\t Send message. E.g: send Hello" << std::endl << std::endl;
+    std::cout << " - exit \n \t\t Exit this session" << std::endl << std::endl;
 }
 
 int main(int argc, char* argv[])
