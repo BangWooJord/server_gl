@@ -24,15 +24,15 @@ void tcp_connection::handle_read(const boost::system::error_code& err) {
         std::istream is(&msg_buf);
         std::getline(is, string_msg);
         if (!string_msg.empty()) {
-            std::cout << "Message recieved from: " << connection_socket.local_endpoint().address() << ", message: " << string_msg << std::endl;
+            std::cout << "\rMessage recieved from: " << connection_socket.local_endpoint().address() << ", message: " << string_msg << std::endl << "Server>";
         }
         start();
     }
     else if (err == boost::asio::error::eof)
-        std::cerr << "Client disconnected" << std::endl;
+        std::cerr << "\rClient disconnected" << std::endl << "Server>";
     else if (boost::asio::error::connection_reset == err)
-        std::cerr << "Client disconnected forcefully" << std::endl;
-    else std::cerr << "Read caught an error: " << err.message() << std::endl;
+        std::cerr << "\rClient disconnected forcefully" << std::endl << "Server>";
+    else std::cerr << "\rRead caught an error: " << err.message() << std::endl << "Server>";
 }
 void tcp_connection::connectionStop() {
     this->connection_socket.close();
@@ -57,17 +57,21 @@ void tcp_server::start_accept()
 void tcp_server::handle_accept(tcp_connection::pointer new_connection,
 	const boost::system::error_code& error)
 {
-	if (!error)
-	{
-		new_connection->start();
+    if (!error)
+    {
+        new_connection->start();
         start_accept();
-	}
-	else std::cerr << "Error in handle_accept: " << error.message();
+    }
+    else std::cerr << "\rError in handle_accept: " << error.message() << std::endl << "Server>";
 }
 void tcp_server::server_stop() {
     srv_io_context.post(boost::bind(&tcp_server::handle_stop, this));
 }
 void tcp_server::handle_stop() {
+    std::string exit_flag = "1";
+    tcp::socket sock(srv_io_context);
+    boost::system::error_code err;
+    boost::asio::write(sock, boost::asio::buffer(exit_flag, 1), err);
     srv_acceptor.close();
     srv_io_context.stop();
 }

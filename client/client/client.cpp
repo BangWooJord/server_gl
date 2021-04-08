@@ -2,6 +2,7 @@
 #include <boost/array.hpp>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
+#include <thread>
 
 using boost::asio::ip::tcp;
 
@@ -47,6 +48,17 @@ int main(int argc, char* argv[])
     std::string input;
     boost::system::error_code err;
     bool is_connected = false;
+    std::thread check_server_th([&]() {
+        while (true) {
+            if (is_connected) {
+                boost::asio::streambuf exit_msg;
+                boost::asio::read(socket, exit_msg, err);
+                std::cout << "\rServer disconnected" << std::endl << "Client>";
+                is_connected = false;
+            }
+        }
+        });
+    std::cerr << "Write 'help' to see the command list" << std::endl << std::endl;
     while (true) {
         std::cout << "Client> ";
         std::cin >> input;
@@ -58,7 +70,7 @@ int main(int argc, char* argv[])
                 connect_to_srv(service, socket, address);
             }
             catch (int err) {
-                std::cerr << "Couldn't establish server connection, error: " << err << std::endl;
+                std::cerr << "\rCouldn't establish server connection, error: " << err << std::endl;
                 is_connected = false;
                 continue;
             }
@@ -73,19 +85,19 @@ int main(int argc, char* argv[])
                     boost::asio::placeholders::error,
                     boost::asio::placeholders::bytes_transferred));
 
-                if (!err) std::cout << "Message sent to " << address << std::endl;
-                else std::cerr << "Error sending message, error: " << err.message() << std::endl;
+                if (!err) std::cout << "\rMessage sent to " << address << std::endl;
+                else std::cerr << "\rError sending message, error: " << err.message() << std::endl;
             }
-            else std::cerr << "You are not connected to the serer" << std::endl;
+            else std::cerr << "\rYou are not connected to the server" << std::endl;
         }
         else if (input == "exit") {
             break;
         }
         else {
-            std::cerr << "'" + input + "'" << " is not recognized as a command. \n Try 'help' to get the command list\n\n";
+            std::cerr << "\r'" + input + "'" << " is not recognized as a command. \n Try 'help' to get the command list\n\n";
         }
     }
-    
+    check_server_th.join();
 
     return 0;
 }
